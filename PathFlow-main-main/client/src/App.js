@@ -1687,17 +1687,20 @@ function GeneratePathForm() {
     setShowRoadmap(false); // Reset view when generating new path
 
     try {
-      const response = await fetch(`${apiUrl}/generate-path`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({ 
-          skills: skills.trim(), 
-          goal: goal.trim() 
-        }),
-      });
+     const token = localStorage.getItem("authToken");
+
+const response = await fetch(`${apiUrl}/generate-path`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Authorization": `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    skills: skills.trim(),
+    goal: goal.trim()
+  }),
+});
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
