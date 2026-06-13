@@ -40,9 +40,9 @@ const MyLearning = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/paths/my-paths', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+const response = await axios.get('http://localhost:5000/api/paths/my-paths', {
+  headers: { Authorization: `Bearer ${token}` }
+});
 
       if (response.data.success) {
         setPaths(response.data.paths);

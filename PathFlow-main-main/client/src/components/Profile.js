@@ -12,59 +12,52 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-const fetchProfile = async () => {
-  try {
-   const token = localStorage.getItem('authToken');
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
 console.log("Fetching profile with token:", token);
-
-    if (!token) {
-      setMessage({ type: 'error', text: 'Please log in to view your profile' });
-      setLoading(false);
-      return;
-    }
+      if (!token) {
+        setMessage({ type: 'error', text: 'Please log in to view your profile' });
+        setLoading(false);
+        return;
+      }
 
     const response = await axios.get(
-      'http://localhost:5000/api/user/profile',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    setProfile(response.data);
-    setFormData({
-      name: response.data.user.name,
-      email: response.data.user.email
-    });
-
-    setLoading(false);
-  } catch (error) {
-    console.error('Error fetching profile:', error);
-
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      setMessage({
-        type: 'error',
-        text: 'Session expired. Please log in again.'
-      });
-
-      localStorage.removeItem('token');
-      localStorage.removeItem('userName');
-
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
-    } else {
-      setMessage({
-        type: 'error',
-        text: 'Failed to load profile'
-      });
-    }
-
-    setLoading(false);
+  'http://localhost:5000/api/user/profile',
+  {
+    headers: { Authorization: `Bearer ${token}` }
   }
-};
-  const handleUpdate = async (e) => {
+);
+      setProfile(response.data);
+      setFormData({
+        name: response.data.user.name,
+        email: response.data.user.email
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+
+      // Handle authentication errors
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        setMessage({
+          type: 'error',
+          text: 'Session expired. Please log in again.'
+        });
+        // Clear invalid token
+       localStorage.removeItem('authToken');
+       localStorage.removeItem('currentUser');
+        // Redirect to home after 2 seconds
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        setMessage({ type: 'error', text: 'Failed to load profile' });
+      }
+      setLoading(false);
+    }
+  };
+
+ const handleUpdate = async (e) => {
   e.preventDefault();
 
   try {
@@ -89,12 +82,15 @@ console.log("Fetching profile with token:", token);
     fetchProfile();
 
   } catch (error) {
+    console.error('Update profile error:', error);
+
     setMessage({
       type: 'error',
       text: error.response?.data?.error || 'Failed to update profile'
     });
   }
 };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
