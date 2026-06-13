@@ -12,73 +12,89 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-  const fetchProfile = async () => {
-    try {
-      const token = localStorage.getItem('token');
+const fetchProfile = async () => {
+  try {
+   const token = localStorage.getItem('authToken');
+console.log("Fetching profile with token:", token);
 
-      if (!token) {
-        setMessage({ type: 'error', text: 'Please log in to view your profile' });
-        setLoading(false);
-        return;
-      }
-
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL || ''}/api/user/profile`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setProfile(response.data);
-      setFormData({
-        name: response.data.user.name,
-        email: response.data.user.email
-      });
+    if (!token) {
+      setMessage({ type: 'error', text: 'Please log in to view your profile' });
       setLoading(false);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-
-      // Handle authentication errors
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        setMessage({
-          type: 'error',
-          text: 'Session expired. Please log in again.'
-        });
-        // Clear invalid token
-        localStorage.removeItem('token');
-        localStorage.removeItem('userName');
-        // Redirect to home after 2 seconds
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 2000);
-      } else {
-        setMessage({ type: 'error', text: 'Failed to load profile' });
-      }
-      setLoading(false);
+      return;
     }
-  };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(
-        `${process.env.REACT_APP_API_URL || ''}/api/user/profile`,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` }
+    const response = await axios.get(
+      'http://localhost:5000/api/user/profile',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      );
-      setMessage({ type: 'success', text: response.data.message });
-      setEditing(false);
-      fetchProfile();
-    } catch (error) {
+      }
+    );
+
+    setProfile(response.data);
+    setFormData({
+      name: response.data.user.name,
+      email: response.data.user.email
+    });
+
+    setLoading(false);
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
       setMessage({
         type: 'error',
-        text: error.response?.data?.error || 'Failed to update profile'
+        text: 'Session expired. Please log in again.'
+      });
+
+      localStorage.removeItem('token');
+      localStorage.removeItem('userName');
+
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    } else {
+      setMessage({
+        type: 'error',
+        text: 'Failed to load profile'
       });
     }
-  };
 
+    setLoading(false);
+  }
+};
+  const handleUpdate = async (e) => {
+  e.preventDefault();
+
+  try {
+    const token = localStorage.getItem('authToken');
+
+    const response = await axios.patch(
+      'http://localhost:5000/api/user/profile',
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    setMessage({
+      type: 'success',
+      text: response.data.message
+    });
+
+    setEditing(false);
+    fetchProfile();
+
+  } catch (error) {
+    setMessage({
+      type: 'error',
+      text: error.response?.data?.error || 'Failed to update profile'
+    });
+  }
+};
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
