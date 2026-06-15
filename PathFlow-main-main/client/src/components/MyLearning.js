@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import authService from '../services/authService';
+const API_URL = 'http://localhost:5000';
 
 // Helper function to parse simple markdown
 const parseMarkdown = (text) => {
@@ -110,9 +111,9 @@ const response = await axios.get('http://localhost:5000/api/paths/my-paths', {
   const deletePath = async (pathId) => {
     try {
       const token = authService.getToken();
-      const response = await axios.delete(`/api/paths/${pathId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.delete(`http://localhost:5000/api/paths/${pathId}`, {
+  headers: { Authorization: `Bearer ${token}` }
+});
 
       if (response.data.success) {
         setPaths(prevPaths => prevPaths.filter(p => p._id !== pathId));
